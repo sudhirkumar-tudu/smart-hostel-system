@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<!--
+  admin-dashboard.html — Admin & Warden Portal  (Sprint 1 / v2.0)
+  Smart Hostel Management System
+
+  7 Tabs (shared by "admin" and "warden" roles):
+    1. tab-overview    — Analytics KPI cards
+    2. tab-rooms       — Room grid + detail table + status controls
+    3. tab-complaints  — All maintenance tickets + workflow
+    4. tab-gatepasses  — Gate pass queue + approve/reject
+    5. tab-leaves      — Leave application approvals
+    6. tab-visitors    — Visitor log (view-only)
+    7. tab-notices     — AI Notice Generator (admin-only badge)
+
+  Role gating: elements with class "admin-only" are hidden for wardens
+  via AdminModule.init() — no extra CSS/page needed.
+
+  Dependencies: styles.css · data.js · app.js
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin / Warden Dashboard — SmartHMS</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div class="dashboard-shell">
+
+    <!-- ── SIDEBAR ───────────────────────────────────────────── -->
+    <aside class="sidebar" style="background:#1a2744;">
+
+      <div class="sidebar-header">
+        <div class="brand"><span class="brand-icon">🏨</span> SmartHMS</div>
+        <!-- Role label filled by AdminModule.init() -->
+        <div class="user-label" style="color:rgba(255,200,100,.85);" id="sidebarRoleLabel">🛡️ Management Portal</div>
+        <div class="user-name" id="sidebarUserName">—</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="tab-nav" style="flex-direction:column;border:none;gap:0;">
+          <button class="tab-btn" data-tab="tab-overview">
+            <span class="nav-icon">📊</span> Analytics
+          </button>
+          <button class="tab-btn" data-tab="tab-rooms">
+            <span class="nav-icon">🏢</span> Room Management
+          </button>
+          <button class="tab-btn" data-tab="tab-complaints">
+            <span class="nav-icon">📋</span> Complaints
+          </button>
+          <button class="tab-btn" data-tab="tab-gatepasses">
+            <span class="nav-icon">🔑</span> Gate Passes
+          </button>
+          <button class="tab-btn" data-tab="tab-leaves">
+            <span class="nav-icon">📅</span> Leave Approvals
+          </button>
+          <button class="tab-btn" data-tab="tab-visitors">
+            <span class="nav-icon">👥</span> Visitor Log
+          </button>
+          <button class="tab-btn" data-tab="tab-notices">
+            <span class="nav-icon">📢</span> AI Notices
+          </button>
+          <button class="tab-btn" data-tab="tab-feedback-insights">
+            <span class="nav-icon">💡</span> Feedback &amp; Sentiment
+          </button>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="logoutBtn">⏻ Logout</button>
+      </div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- ── TOP UTILITY & THEME BAR ── -->
+      <div class="top-util-bar">
+        <div class="top-util-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Navigation">☰ Menu</button>
+          <span style="font-size:0.85rem;color:var(--clr-muted);">Operations Control · <strong style="color:var(--clr-success);">● Live Synced</strong></span>
+        </div>
+        <div class="top-util-right">
+          <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Light / Dark Mode">
+            🌙 <span class="theme-label">Dark</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── LIVE EMERGENCY ALERT BROADCAST BANNER ── -->
+      <div id="emergencyAlertBanner" style="display:none;"></div>
+
+      <!-- ── NATURAL LANGUAGE AI SMART SEARCH BAR ── -->
+      <div class="smart-search-container">
+        <div class="smart-search-input-wrap">
+          <span class="smart-search-icon">🔍</span>
+          <input type="text" id="adminSmartSearch" class="smart-search-input"
+                 placeholder="AI Smart Search — e.g. 'Show vacant rooms', 'pending complaints', 'unpaid fees', 'students in block B'..." autocomplete="off">
+          <button type="button" id="smartSearchClearBtn" class="smart-search-clear" style="display:none;" title="Clear search">✕</button>
+        </div>
+        <div class="smart-search-chips">
+          <span class="smart-chips-label">Quick AI Queries:</span>
+          <button type="button" class="smart-chip" data-query="Show vacant rooms">🛏️ Show vacant rooms</button>
+          <button type="button" class="smart-chip" data-query="Find students with pending complaints">⚠️ Pending complaints</button>
+          <button type="button" class="smart-chip" data-query="List unpaid hostel fees">💰 List unpaid fees</button>
+          <button type="button" class="smart-chip" data-query="High priority tickets">🔥 Urgent tickets</button>
+          <button type="button" class="smart-chip" data-query="Visitors currently inside">👥 Visitors inside</button>
+          <button type="button" class="smart-chip" data-query="Pending leave requests">🚪 Pending leaves</button>
+        </div>
+        <!-- Dynamic Smart Search Results Container -->
+        <div id="smartSearchResults" class="smart-search-results" style="display:none;"></div>
+      </div>
+
+      <!--
+        TOP COUNTERS BAR
+        Rendered by AdminModule.renderTopCounters()
+        Shows: Total Students · Vacant Rooms · Open Tickets · Pending Leaves · Visitors Inside
+      -->
+      <div id="adminTopCounters" class="top-counters-bar"></div>
+
+      <!-- ══════════════════════════════════ TAB 1 — ANALYTICS ══ -->
+      <section id="tab-overview" class="tab-panel">
+        <div class="page-header">
+          <h2>📊 Analytics &amp; Overview</h2>
+          <p>Real-time snapshot of occupancy, tickets, and financial health.</p>
+        </div>
+
+        <!-- KPI cards — AdminModule.renderOverview() fills #kpiContainer -->
+        <div class="kpi-grid" id="kpiContainer"></div>
+
+        <h3 style="margin:var(--sp-xl) 0 var(--sp-md);">📝 Quick Summary</h3>
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-title">🕐 Last Updated</div>
+            <div class="card-value" style="font-size:1.1rem;" id="lastUpdatedTime">—</div>
+            <div class="card-subtitle">Refreshed on page load</div>
+          </div>
+          <div class="card">
+            <div class="card-title">📆 Today's Date</div>
+            <div class="card-value" style="font-size:1.1rem;" id="todayDate">—</div>
+            <div class="card-subtitle" id="todayDay">—</div>
+          </div>
+          <div class="card">
+            <div class="card-title">🏨 Hostel Name</div>
+            <div class="card-value" style="font-size:1.1rem;">Sunrise Hostel</div>
+            <div class="card-subtitle">3 Blocks · A, B, C</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 2 — ROOMS ══ -->
+      <section id="tab-rooms" class="tab-panel">
+        <div class="page-header">
+          <h2>🏢 Room Management</h2>
+          <p>Visual map of all rooms. Click a cell to cycle its status. Use the dropdown for direct control.</p>
+        </div>
+
+        <!-- Legend -->
+        <div style="display:flex;gap:var(--sp-md);flex-wrap:wrap;margin-bottom:var(--sp-lg);">
+          <span><span class="room-cell room-occupied" style="display:inline-block;width:20px;height:20px;vertical-align:middle;border-radius:4px;"></span> Occupied</span>
+          <span><span class="room-cell room-vacant"   style="display:inline-block;width:20px;height:20px;vertical-align:middle;border-radius:4px;"></span> Vacant</span>
+          <span><span class="room-cell room-maintenance" style="display:inline-block;width:20px;height:20px;vertical-align:middle;border-radius:4px;"></span> Maintenance</span>
+        </div>
+
+        <!-- Room grid — AdminModule.renderRoomGrid() fills this -->
+        <div id="roomGridContainer"></div>
+
+        <h3 style="margin:var(--sp-xl) 0 var(--sp-md);">All Rooms — Detailed List</h3>
+        <!-- AdminModule.renderRoomDetailTable() fills this -->
+        <div class="table-action-bar">
+          <span style="font-size:0.85rem;font-weight:600;color:var(--clr-muted);">Room Allotment &amp; Occupancy Registry</span>
+          <div class="table-export-btns">
+            <button type="button" class="btn-export" onclick="ExportModule.exportRoomsCSV()">📥 Export CSV</button>
+            <button type="button" class="btn-export" onclick="ExportModule.printSection('Hostel Room Occupancy Report', 'roomDetailTableContainer')">🖨️ Print Report</button>
+          </div>
+        </div>
+        <div id="roomDetailTableContainer"></div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 3 — COMPLAINTS ══ -->
+      <section id="tab-complaints" class="tab-panel">
+        <div class="page-header">
+          <h2>📋 Maintenance Complaints</h2>
+          <p>All student-raised maintenance tickets. Pending items are shown first.</p>
+        </div>
+
+        <!-- Status legend badges -->
+        <div style="display:flex;gap:var(--sp-sm);flex-wrap:wrap;margin-bottom:var(--sp-md);">
+          <span class="badge badge-pending">Pending</span>
+          <span class="badge badge-inprogress">In Progress</span>
+          <span class="badge badge-resolved">Resolved</span>
+          <span style="margin-left:auto;font-size:0.82rem;color:var(--clr-muted);">Sorted: pending first</span>
+        </div>
+
+        <!-- AdminModule.renderComplaints() fills this -->
+        <div class="table-action-bar">
+          <span style="font-size:0.85rem;font-weight:600;color:var(--clr-muted);">Maintenance Logs &amp; Status</span>
+          <div class="table-export-btns">
+            <button type="button" class="btn-export" onclick="ExportModule.exportComplaintsCSV()">📥 Export CSV</button>
+            <button type="button" class="btn-export" onclick="ExportModule.printSection('Maintenance Complaints Report', 'complaintsContainer')">🖨️ Print Report</button>
+          </div>
+        </div>
+        <div id="complaintsContainer"></div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 4 — GATE PASSES ══ -->
+      <section id="tab-gatepasses" class="tab-panel">
+        <div class="page-header">
+          <h2>🔑 Gate Pass Approvals</h2>
+          <p>Review and approve / reject student gate pass requests before they exit.</p>
+        </div>
+
+        <div class="card" style="background:#eff6ff;border-color:#bfdbfe;max-width:620px;margin-bottom:var(--sp-lg);font-size:0.88rem;">
+          📌 Approved passes get a QR code the security guard scans at the gate.
+          Rejected or pending passes deny exit.
+        </div>
+
+        <!-- AdminModule.renderGatePasses() fills this -->
+        <div class="table-action-bar">
+          <span style="font-size:0.85rem;font-weight:600;color:var(--clr-muted);">Official Gate &amp; Outpass Register</span>
+          <div class="table-export-btns">
+            <button type="button" class="btn-export" onclick="ExportModule.exportGatePassesCSV()">📥 Export CSV</button>
+            <button type="button" class="btn-export" onclick="ExportModule.printSection('Gate Pass & Outpass Report', 'gatePassesContainer')">🖨️ Print Report</button>
+          </div>
+        </div>
+        <div id="gatePassesContainer"></div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 5 — LEAVES ══ -->
+      <section id="tab-leaves" class="tab-panel">
+        <div class="page-header">
+          <h2>📅 Leave Approval Panel</h2>
+          <p>Review and action student leave applications. Pending requests shown first.</p>
+        </div>
+
+        <div class="card" style="background:#fffbeb;border-color:#f59e0b;max-width:620px;margin-bottom:var(--sp-lg);">
+          <strong>📌 Leave Policy:</strong> Applications must be submitted at least 48 hours before departure.
+          Emergency cases require direct warden approval with documentation.
+        </div>
+
+        <!-- AdminModule.renderLeaveApprovals() fills this -->
+        <div class="table-action-bar">
+          <span style="font-size:0.85rem;font-weight:600;color:var(--clr-muted);">Student Leave Applications</span>
+          <div class="table-export-btns">
+            <button type="button" class="btn-export" onclick="ExportModule.exportLeavesCSV()">📥 Export CSV</button>
+            <button type="button" class="btn-export" onclick="ExportModule.printSection('Student Leave Applications Report', 'leaveApprovalsContainer')">🖨️ Print Report</button>
+          </div>
+        </div>
+        <div id="leaveApprovalsContainer"></div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 6 — VISITORS ══ -->
+      <section id="tab-visitors" class="tab-panel">
+        <div class="page-header">
+          <h2>👥 Visitor Log</h2>
+          <p>All visitor entries logged by security guards. Current visitors shown first.</p>
+        </div>
+
+        <!-- AdminModule.renderVisitorLog() fills this -->
+        <div class="table-action-bar">
+          <span style="font-size:0.85rem;font-weight:600;color:var(--clr-muted);">Campus Visitor &amp; Guest Registry</span>
+          <div class="table-export-btns">
+            <button type="button" class="btn-export" onclick="ExportModule.exportVisitorsCSV()">📥 Export CSV</button>
+            <button type="button" class="btn-export" onclick="ExportModule.printSection('Visitor Log Report', 'visitorLogContainer')">🖨️ Print Report</button>
+          </div>
+        </div>
+        <div id="visitorLogContainer"></div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 7 — AI NOTICES ══ -->
+      <section id="tab-notices" class="tab-panel">
+        <div class="page-header">
+          <h2>📢 AI Notice Generator &amp; Announcement Board</h2>
+          <p>Generate formal hostel announcements with AI. Review, edit, and publish directly to students.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-xl);align-items:start;" class="qr-layout">
+
+          <!-- Left: AI Notice Creator Form -->
+          <div class="card">
+            <h3 style="margin-bottom:var(--sp-md);">✍️ Create Announcement</h3>
+
+            <div class="form-group">
+              <label for="noticeTopic">Announcement Topic</label>
+              <select id="noticeTopic" class="form-control">
+                <option value="Mess Inspection">🍽️ Mess Inspection &amp; Hygiene Report</option>
+                <option value="Maintenance Shutdown">🔧 Maintenance Shutdown (Water / Electricity)</option>
+                <option value="Gate Timing Revision">🚪 Gate Timing Revision &amp; Curfew</option>
+                <option value="Curfew Reminder">⏰ Strict Curfew &amp; Late Entry Rules</option>
+                <option value="Fee Payment Deadline">💰 Fee Payment Deadline &amp; Late Fine</option>
+                <option value="Exam Silence Hours">🤫 Exam Silence Hours Enforcement</option>
+                <option value="Disciplinary Warning">⚠️ Disciplinary Warning &amp; Conduct Rules</option>
+                <option value="Festival Celebration">🎉 Hostel Festival / Cultural Event</option>
+                <option value="Custom Notice">📝 Custom Official Notice</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="noticeAudience">Target Audience</label>
+              <select id="noticeAudience" class="form-control">
+                <option value="All Residents">All Hostel Residents (Blocks A, B, C)</option>
+                <option value="Block A Residents">Block A Residents (Boys)</option>
+                <option value="Block B Residents">Block B Residents (Girls)</option>
+                <option value="Block C Residents">Block C Residents (Mixed/PG)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="noticeUrgency">Notice Priority / Urgency</label>
+              <select id="noticeUrgency" class="form-control">
+                <option value="Normal">🟢 Standard Notice</option>
+                <option value="High Priority">🟡 High Priority</option>
+                <option value="Urgent">🔴 Urgent Announcement</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="noticeDetails">Additional Details / Instructions (Optional)</label>
+              <textarea id="noticeDetails" class="form-control" rows="3"
+                        placeholder="e.g. Shutdown from 2 PM to 5 PM, store water in advance, contact maintenance at ext 204..."></textarea>
+            </div>
+
+            <button type="button" class="btn btn-primary btn-block" id="generateNoticeBtn">
+              ✨ Generate Notice with AI →
+            </button>
+          </div>
+
+          <!-- Right: Editable Notice Preview & Publishing -->
+          <div class="card" id="noticeEditorCard">
+            <h3 style="margin-bottom:var(--sp-md);">📄 Formatted Notice (Editable)</h3>
+            <div id="noticeGeneratedContainer">
+              <div class="empty-state">
+                <div class="empty-icon">📢</div>
+                <p>Select a topic and click "Generate Notice with AI" to preview and edit your announcement here.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Active Published Notices -->
+        <h3 style="margin:var(--sp-xl) 0 var(--sp-md);">📋 Currently Active Published Notices</h3>
+        <div id="activeNoticesList"></div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 8 — FEEDBACK & SENTIMENT ══ -->
+      <section id="tab-feedback-insights" class="tab-panel">
+        <div class="page-header">
+          <h2>💡 Student Feedback &amp; AI Sentiment Insights</h2>
+          <p>Real-time student experience analytics with automated NLP sentiment categorization.</p>
+        </div>
+
+        <!-- Sentiment Breakdown Overview Card -->
+        <div class="sentiment-breakdown-card" id="sentimentSummaryCard"></div>
+
+        <!-- Student Feedback List -->
+        <h3 style="margin-bottom:var(--sp-md);">💬 All Student Feedback Submissions</h3>
+        <div class="table-action-bar">
+          <span style="font-size:0.85rem;font-weight:600;color:var(--clr-muted);">AI Sentiment Feedback Records</span>
+          <div class="table-export-btns">
+            <button type="button" class="btn-export" onclick="ExportModule.exportFeedbackCSV()">📥 Export CSV</button>
+            <button type="button" class="btn-export" onclick="ExportModule.printSection('Student Feedback & Sentiment Analysis Report', 'adminFeedbackContainer')">🖨️ Print Report</button>
+          </div>
+        </div>
+        <div id="adminFeedbackContainer"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+
+  <script>
+    // Fill date/time quick-summary cards (runs after DOM is ready)
+    (function fillDateCards() {
+      const now    = new Date();
+      const days   = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const timeEl = document.getElementById("lastUpdatedTime");
+      const dateEl = document.getElementById("todayDate");
+      const dayEl  = document.getElementById("todayDay");
+      if (timeEl) timeEl.textContent = now.toLocaleTimeString("en-IN", {hour:"2-digit", minute:"2-digit"});
+      if (dateEl) dateEl.textContent = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+      if (dayEl)  dayEl.textContent  = days[now.getDay()];
+    })();
+
+    // Stub notice generator (GEMINI API HOOK — replace with live call)
+    AdminModule.generateNotice = function() {
+      const topic   = document.getElementById("noticeTopic").value;
+      const details = document.getElementById("noticeDetails").value;
+      const templates = {
+        curfew:      `HOSTEL NOTICE
+
+To All Residents,
+
+This is a reminder that the hostel gate CLOSES at 10:00 PM sharp.
+Students returning after 10 PM must obtain prior warden permission and sign the register.
+Repeat violations will attract disciplinary action.
+
+${details ? 'Note: ' + details + '\n\n' : ''}Hostel Administration
+Sunrise Hostel`,
+        mess:        `MESS SCHEDULE NOTICE
+
+To All Residents,
+
+Mess Timings:
+  Breakfast: 7:00 AM – 9:00 AM
+  Lunch:     12:00 PM – 2:00 PM
+  Dinner:    7:00 PM – 9:00 PM
+
+Students are requested to enter the mess within scheduled hours. No entry after closing time.
+
+${details ? 'Note: ' + details + '\n\n' : ''}Hostel Mess Committee`,
+        fees:        `FEE REMINDER NOTICE
+
+To All Residents,
+
+This is a gentle reminder that hostel fee and mess fee for the current semester are due.
+Please clear all dues at the hostel office or via the college payment portal at the earliest.
+
+Non-payment may result in suspension of mess services and room facilities.
+
+${details ? 'Note: ' + details + '\n\n' : ''}Hostel Accounts Office`,
+        maintenance: `MAINTENANCE NOTICE
+
+To All Residents,
+
+Scheduled maintenance work will be carried out in the hostel premises.
+Students are requested to cooperate with the maintenance team and ensure their rooms are accessible during the scheduled hours.
+
+${details ? 'Details: ' + details + '\n\n' : ''}Hostel Administration`,
+        exams:       `EXAMINATION SILENCE HOURS — NOTICE
+
+To All Residents,
+
+With examinations underway, SILENCE HOURS are in effect:
+  10:00 PM to 6:00 AM — Strict silence to be maintained.
+
+Any noise violations will be treated seriously. All gatherings in corridors are banned.
+
+${details ? 'Note: ' + details + '\n\n' : ''}Academic Hostel Committee`,
+        custom:      `HOSTEL NOTICE
+
+To All Residents,
+
+${details || 'Please refer to the notice board for further details.'}
+
+Hostel Administration
+Sunrise Hostel`
+      };
+      const text = templates[topic] || templates.custom;
+      document.getElementById("noticeText").textContent = text;
+      document.getElementById("noticeOutput").style.display = "block";
+    };
+  </script>
+
+</body>
+</html>

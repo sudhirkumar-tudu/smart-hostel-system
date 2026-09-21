@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<!--
+  security-dashboard.html — Security Guard Portal  (Sprint 1 / v2.0)
+  Smart Hostel Management System
+
+  2 Tabs:
+    1. tab-qr        — QR Pass Verifier (scan / type QR code to check validity)
+    2. tab-visitors  — Visitor Entry Log (register new visitor + live table)
+
+  Dependencies: styles.css · data.js · app.js
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Dashboard — SmartHMS</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div class="dashboard-shell">
+
+    <!-- ── SIDEBAR ──────────────────────────────────────────── -->
+    <aside class="sidebar" style="background:#1c2333;">
+
+      <div class="sidebar-header">
+        <div class="brand"><span class="brand-icon">🏨</span> SmartHMS</div>
+        <div class="user-label" style="color:rgba(251,191,36,.85);">🔒 Security Guard Portal</div>
+        <div class="user-name" id="sidebarUserName">—</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="tab-nav" style="flex-direction:column;border:none;gap:0;">
+          <button class="tab-btn" data-tab="tab-qr">
+            <span class="nav-icon">📲</span> QR Pass Verifier
+          </button>
+          <button class="tab-btn" data-tab="tab-visitors">
+            <span class="nav-icon">👥</span> Visitor Log
+          </button>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="logoutBtn">⏻ Logout</button>
+      </div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- ── TOP UTILITY & THEME BAR ── -->
+      <div class="top-util-bar">
+        <div class="top-util-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Navigation">☰ Menu</button>
+          <span style="font-size:0.85rem;color:var(--clr-muted);">Gate Checkpoint: <strong>Main Hostel Gate #1</strong></span>
+        </div>
+        <div class="top-util-right">
+          <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Light / Dark Mode">
+            🌙 <span class="theme-label">Dark</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── LIVE EMERGENCY ALERT BROADCAST BANNER ── -->
+      <div id="emergencyAlertBanner" style="display:none;"></div>
+
+      <!-- ══════════════════════════════════ TAB 1 — QR VERIFIER ══ -->
+      <section id="tab-qr" class="tab-panel">
+
+        <div class="page-header">
+          <h2>📲 QR Pass Verifier</h2>
+          <p>Scan or type the student's gate-pass QR code to verify and log their check-in / check-out.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-xl);align-items:start;flex-wrap:wrap;" class="qr-layout">
+
+          <!-- Left: Input form -->
+          <div class="card qr-verifier-card">
+            <h3 style="margin-bottom:var(--sp-md);">🔍 Enter QR Code</h3>
+
+            <form id="qrVerifierForm">
+              <div class="form-group">
+                <label for="qrInput">QR Code / Pass ID</label>
+                <input
+                  type="text" id="qrInput" name="qrInput" class="form-control"
+                  placeholder="e.g. QR-2026-002"
+                  autocomplete="off" autofocus
+                  style="font-size:1.1rem;font-family:monospace;letter-spacing:1px;" />
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Verify Pass →</button>
+              <button type="button" id="simulateCameraScanBtn" class="btn btn-outline btn-block" style="margin-top:8px;">
+                📸 Simulate Live Camera QR Scan
+              </button>
+            </form>
+
+            <!-- Quick-test buttons for demo -->
+            <div style="margin-top:var(--sp-lg);">
+              <p style="font-size:0.82rem;color:var(--clr-muted);margin-bottom:var(--sp-sm);">
+                Quick Demo Tests (click to auto-fill):
+              </p>
+              <div style="display:flex;flex-wrap:wrap;gap:var(--sp-sm);">
+                <button class="btn btn-outline btn-sm qr-test-btn" data-qr="QR-2026-001" title="Pending pass">QR-2026-001 (Pending)</button>
+                <button class="btn btn-outline btn-sm qr-test-btn" data-qr="QR-2026-002" title="Approved pass">QR-2026-002 (Approved)</button>
+                <button class="btn btn-outline btn-sm qr-test-btn" data-qr="QR-2026-003" title="Already checked-out">QR-2026-003 (Out)</button>
+                <button class="btn btn-outline btn-sm qr-test-btn" data-qr="QR-2026-004" title="Approved">QR-2026-004 (Approved)</button>
+                <button class="btn btn-outline btn-sm qr-test-btn" data-qr="QR-2026-005" title="Returned">QR-2026-005 (Returned)</button>
+                <button class="btn btn-outline btn-sm qr-test-btn" data-qr="INVALID-001" title="Invalid">INVALID-001</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Result box -->
+          <!--
+            SecurityModule._wireQRVerifier() injects the result here.
+            On valid approved pass → marks "checked-out" and saves.
+            On checked-out pass   → marks "returned" and saves.
+          -->
+          <div id="qrResult">
+            <div class="qr-result qr-idle">
+              <div class="qr-result-icon">📲</div>
+              <div class="qr-result-title">Awaiting Scan</div>
+              <div class="qr-result-note">Enter a QR code on the left to verify the student's gate pass.</div>
+            </div>
+          </div>
+
+        </div><!-- /.qr-layout -->
+
+        <!-- Today's Gate Pass Queue -->
+        <h3 style="margin:var(--sp-xl) 0 var(--sp-md);">📋 All Gate Passes</h3>
+        <!-- SecurityModule._renderGatePassQueue() fills this -->
+        <div class="table-action-bar">
+          <span style="font-size:0.85rem;font-weight:600;color:var(--clr-muted);">Real-Time Gate Pass Status</span>
+          <div class="table-export-btns">
+            <button type="button" class="btn-export" onclick="ExportModule.exportGatePassesCSV()">📥 Export CSV</button>
+            <button type="button" class="btn-export" onclick="ExportModule.printSection('Security Gate Passes Queue', 'gatePassQueueContainer')">🖨️ Print Log</button>
+          </div>
+        </div>
+        <div id="gatePassQueueContainer"></div>
+
+      </section><!-- /#tab-qr -->
+
+
+      <!-- ══════════════════════════════════ TAB 2 — VISITOR LOG ══ -->
+      <section id="tab-visitors" class="tab-panel">
+
+        <div class="page-header">
+          <h2>👥 Visitor Entry Log</h2>
+          <p>Register new visitor entries and mark exits. All records are saved to the hostel database.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-xl);align-items:start;flex-wrap:wrap;" class="visitor-layout">
+
+          <!-- Left: New Visitor Registration Form -->
+          <div class="card visitor-form-card">
+            <h3 style="margin-bottom:var(--sp-md);">➕ Register New Visitor</h3>
+
+            <div class="form-message" id="visitorRegMsg"></div>
+
+            <form id="visitorRegForm">
+
+              <div class="form-group">
+                <label for="visitorName">Visitor Name <span style="color:var(--clr-danger);">*</span></label>
+                <input type="text" id="visitorName" name="visitorName" class="form-control"
+                       placeholder="Full name of the visitor" required />
+              </div>
+
+              <div class="form-group">
+                <label for="visitorPhone">Mobile Number <span style="color:var(--clr-danger);">*</span></label>
+                <input type="tel" id="visitorPhone" name="visitorPhone" class="form-control"
+                       placeholder="+91-XXXXX-XXXXX" required />
+              </div>
+
+              <div class="form-group">
+                <label for="relation">Relation to Student</label>
+                <select id="relation" name="relation" class="form-control">
+                  <option value="Father">Father</option>
+                  <option value="Mother">Mother</option>
+                  <option value="Guardian">Guardian</option>
+                  <option value="Sibling">Sibling</option>
+                  <option value="Relative">Relative</option>
+                  <option value="Friend">Friend</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="hostStudentId">Host Student ID <span style="color:var(--clr-danger);">*</span></label>
+                <input type="text" id="hostStudentId" name="hostStudentId" class="form-control"
+                       placeholder="e.g. S001, S003" required
+                       style="font-family:monospace;letter-spacing:1px;" />
+              </div>
+
+              <div class="form-group">
+                <label for="purpose">Purpose of Visit <span style="color:var(--clr-danger);">*</span></label>
+                <input type="text" id="purpose" name="purpose" class="form-control"
+                       placeholder="e.g. General visit, Fee payment, Dropping items" required />
+              </div>
+
+              <div class="card" style="background:#fffbeb;border-color:#fbbf24;font-size:0.85rem;margin-bottom:var(--sp-md);">
+                ⚠️ Visitors are allowed only in the common room. Entry time is logged automatically.
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">Log Visitor Entry →</button>
+
+            </form>
+          </div>
+
+          <!-- Right: Current visitors summary -->
+          <div>
+            <div class="card" style="margin-bottom:var(--sp-md);" id="visitorCountCard">
+              <div class="card-title">👥 Visitors Currently Inside</div>
+              <div class="card-value" id="visitorCountNum">—</div>
+            </div>
+            <div class="card" style="background:#f0fdf4;border-color:#86efac;font-size:0.85rem;">
+              <strong>📋 Rules:</strong>
+              <ul style="margin:var(--sp-sm) 0 0;padding-left:1.2rem;">
+                <li>Visiting hours: 10 AM – 6 PM</li>
+                <li>ID proof mandatory at entry</li>
+                <li>Common room access only (no rooms)</li>
+                <li>All exits must be logged</li>
+              </ul>
+            </div>
+          </div>
+
+        </div><!-- /.visitor-layout -->
+
+        <!-- Visitor Log Table -->
+        <h3 style="margin:var(--sp-xl) 0 var(--sp-md);">📋 Today's Visitor Log</h3>
+        <!--
+          SecurityModule._renderVisitorLog() fills this.
+          "Mark Exit" button calls SecurityModule.markVisitorExit(id).
+        -->
+        <div class="table-action-bar">
+          <span style="font-size:0.85rem;font-weight:600;color:var(--clr-muted);">Today\'s Active &amp; Exited Visitors</span>
+          <div class="table-export-btns">
+            <button type="button" class="btn-export" onclick="ExportModule.exportVisitorsCSV()">📥 Export CSV</button>
+            <button type="button" class="btn-export" onclick="ExportModule.printSection('Security Visitor Register', 'visitorLogSecurity')">🖨️ Print Log</button>
+          </div>
+        </div>
+        <div id="visitorLogSecurity"></div>
+
+      </section><!-- /#tab-visitors -->
+
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+
+  <script>
+    // Update visitor count card after SecurityModule initialises
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        const visitors = StorageHelper.get("hms_visitorLog") || [];
+        const inside   = visitors.filter(v => v.status === "inside").length;
+        const el       = document.getElementById("visitorCountNum");
+        if (el) el.textContent = inside;
+      }, 200);
+    });
+  </script>
+
+</body>
+</html>

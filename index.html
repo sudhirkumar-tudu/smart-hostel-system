@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<!--
+  index.html — Public Home & Landing Page
+  Sunrise College Hostel — Smart Hostel Management System (SmartHMS)
+
+  Public-facing portal featuring:
+    • Modern navigation bar with anchors & prominent "Portal Login" button
+    • High-impact Hero Section with CTAs and facility highlights
+    • Real-time quick statistics (500+ Residents, 99% Resolution, etc.)
+    • "About the Hostel" overview
+    • Key Facilities & Amenities Grid
+    • Hostel Rules & Curfew Guidelines
+    • Contact & 24/7 Emergency Helpline
+    • Clean footer
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sunrise College Hostel — Smart Campus Living</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="landing-body">
+
+  <!-- ═══════════════════════════════════════════════
+       TOP NAVIGATION BAR
+       ═══════════════════════════════════════════════ -->
+  <header class="landing-header">
+    <div class="landing-container nav-container">
+      <a href="index.html" class="navbar-brand" style="text-decoration:none;">
+        <span class="brand-icon">🏨</span>
+        <div>
+          <div class="brand-title">SmartHMS</div>
+          <div class="navbar-tagline">Sunrise College Hostel</div>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="landing-nav-links">
+        <a href="#home" class="nav-link">Home</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#rules" class="nav-link">Rules & Guidelines</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </nav>
+
+      <!-- Prominent Portal Login Button -->
+      <div class="nav-cta" style="display:flex;align-items:center;gap:10px;">
+        <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Light / Dark Mode">
+          🌙 <span class="theme-label">Dark</span>
+        </button>
+        <a href="login.html" class="btn btn-primary btn-portal-login">
+          <span>Portal Login</span> <span class="arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ═══════════════════════════════════════════════
+       HERO SECTION
+       ═══════════════════════════════════════════════ -->
+  <section id="home" class="hero-section">
+    <div class="landing-container hero-container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span> Official Campus Residence Portal
+        </div>
+        <h1 class="hero-title">
+          Smart Living &amp; Community Care for <span class="highlight-text">Modern Campus Life</span>
+        </h1>
+        <p class="hero-subtitle">
+          Welcome to Sunrise College Hostel. Experience safe, comfortable, and technology-driven hostel living equipped with AI-powered grievance auto-resolution, digitized leave approvals, and 24/7 security.
+        </p>
+
+        <div class="hero-actions">
+          <a href="login.html" class="btn btn-primary btn-lg">
+            Access Resident Portal →
+          </a>
+          <a href="#features" class="btn btn-outline btn-lg">
+            Explore Facilities
+          </a>
+        </div>
+
+        <div class="hero-trust">
+          <span>🛡️ Verified Campus Security</span>
+          <span>⚡ High-Speed Wi-Fi</span>
+          <span>🍽️ Hygienic Mess</span>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-card-preview">
+          <div class="preview-header">
+            <div class="preview-dot dot-red"></div>
+            <div class="preview-dot dot-yellow"></div>
+            <div class="preview-dot dot-green"></div>
+            <span class="preview-label">Live Hostel Operations Dashboard</span>
+          </div>
+          <div class="preview-body">
+            <div class="preview-stat-row">
+              <div class="p-stat">
+                <span class="p-num">3 Blocks</span>
+                <span class="p-desc">A, B &amp; C Wings</span>
+              </div>
+              <div class="p-stat">
+                <span class="p-num">100%</span>
+                <span class="p-desc">Automated Tickets</span>
+              </div>
+            </div>
+            <div class="preview-ai-pill">
+              <span class="ai-spark">🤖</span>
+              <span><strong>AI Grievance Engine:</strong> Auto-categorizes issues in &lt;1 second</span>
+            </div>
+            <div class="preview-badge-row">
+              <span class="badge badge-occupied">Biometric Gate</span>
+              <span class="badge badge-vacant">Spacious Rooms</span>
+              <span class="badge badge-low">Nutritious Diet</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       QUICK STATISTICS SECTION
+       ═══════════════════════════════════════════════ -->
+  <section class="stats-section">
+    <div class="landing-container">
+      <div class="stats-grid">
+
+        <div class="stat-box">
+          <div class="stat-icon">👥</div>
+          <div class="stat-number">500+</div>
+          <div class="stat-title">Student Residents</div>
+          <div class="stat-detail">Thriving multi-disciplinary student community</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-number">99%</div>
+          <div class="stat-title">Issue Resolution</div>
+          <div class="stat-detail">Rapid turnaround with automated AI ticketing</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-icon">🛡️</div>
+          <div class="stat-number">24/7</div>
+          <div class="stat-title">Campus Security</div>
+          <div class="stat-detail">CCTV coverage and biometric gate logging</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-icon">📶</div>
+          <div class="stat-number">100%</div>
+          <div class="stat-title">Wi-Fi Coverage</div>
+          <div class="stat-detail">High-speed gigabit connectivity across blocks</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       ABOUT THE HOSTEL
+       ═══════════════════════════════════════════════ -->
+  <section id="about" class="landing-section">
+    <div class="landing-container">
+      <div class="section-head">
+        <span class="section-tag">Home Away from Home</span>
+        <h2 class="section-title">About Sunrise College Hostel</h2>
+        <p class="section-subtitle">
+          Established to provide a secure, inclusive, and academically conducive environment for undergraduate and postgraduate students.
+        </p>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-card">
+          <div class="about-icon">🌱</div>
+          <h3>Holistic Campus Living</h3>
+          <p>
+            We go beyond providing a room; our residential complex offers modern recreation rooms, study lounges, laundry amenities, and green outdoor sports courts.
+          </p>
+        </div>
+
+        <div class="about-card">
+          <div class="about-icon">🧠</div>
+          <h3>Smart Digital Administration</h3>
+          <p>
+            No paper forms. Apply for overnight leave, track room maintenance, inspect your weekly mess schedule, and get answers from our AI assistant instantly.
+          </p>
+        </div>
+
+        <div class="about-card">
+          <div class="about-icon">🤝</div>
+          <h3>Dedicated Warden &amp; Support Team</h3>
+          <p>
+            Experienced resident wardens and maintenance supervisors are on-site around the clock to ensure student safety, hygiene, and emergency assistance.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       KEY FACILITY HIGHLIGHTS
+       ═══════════════════════════════════════════════ -->
+  <section id="features" class="landing-section bg-alt">
+    <div class="landing-container">
+      <div class="section-head">
+        <span class="section-tag">Key Highlights</span>
+        <h2 class="section-title">World-Class Facilities &amp; Services</h2>
+        <p class="section-subtitle">
+          Engineered for safety, academic productivity, and student well-being.
+        </p>
+      </div>
+
+      <div class="features-grid">
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">📶</div>
+          <h3>High-Speed Campus Wi-Fi</h3>
+          <p>Gigabit fiber-optic connection across all three residential blocks, ensuring seamless remote research and coursework access.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">🛡️</div>
+          <h3>24/7 Multi-Tier Security</h3>
+          <p>Full perimeter CCTV monitoring, biometric turnstile checkpoints, guarded entry gates, and dedicated night warden patrols.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">🤖</div>
+          <h3>AI-Powered Grievance System</h3>
+          <p>State-of-the-art NLP model automatically tags complaints into Electrical, Plumbing, or Furniture and dispatches urgent repairs.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">🍽️</div>
+          <h3>Hygienic 4-Meal Mess Service</h3>
+          <p>Dietician-approved weekly menu offering fresh breakfast, lunch, high tea, and dinner prepared in an FSSAI-certified kitchen.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">🚪</div>
+          <h3>Instant Online Leave Approval</h3>
+          <p>Apply for outstation or home leaves in seconds with real-time status tracking and warden digital verification.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">💬</div>
+          <h3>HostelBot 24/7 AI Assistant</h3>
+          <p>Get immediate clarification on gate rules, mess timings, fee refunds, and hospital contacts right from your phone.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       RULES & GUIDELINES
+       ═══════════════════════════════════════════════ -->
+  <section id="rules" class="landing-section">
+    <div class="landing-container">
+      <div class="section-head">
+        <span class="section-tag">Campus Discipline</span>
+        <h2 class="section-title">Hostel Rules &amp; Guidelines</h2>
+        <p class="section-subtitle">
+          Ensuring safety, mutual respect, and a peaceful study atmosphere for all residents.
+        </p>
+      </div>
+
+      <div class="rules-grid">
+
+        <div class="rule-box">
+          <div class="rule-header">
+            <span class="rule-badge">Curfew</span>
+            <h4>🚪 Gate Timings</h4>
+          </div>
+          <p>Main hostel gates close strictly at <strong>10:00 PM</strong>. Entry register must be signed for return after 9:30 PM. Late arrival requires prior written warden sanction.</p>
+        </div>
+
+        <div class="rule-box">
+          <div class="rule-header">
+            <span class="rule-badge">Visitors</span>
+            <h4>👥 Guest Policy</h4>
+          </div>
+          <p>Visitors and day scholars are permitted in the designated visitor lounge only between <strong>10:00 AM and 6:00 PM</strong>. Overnight guest stays are strictly prohibited.</p>
+        </div>
+
+        <div class="rule-box">
+          <div class="rule-header">
+            <span class="rule-badge">Safety</span>
+            <h4>⚡ Electrical Appliances</h4>
+          </div>
+          <p>High-wattage appliances (immersion rods, induction heaters, heavy coils &gt;500W) are forbidden inside rooms to protect building circuitry.</p>
+        </div>
+
+        <div class="rule-box">
+          <div class="rule-header">
+            <span class="rule-badge">Study Hours</span>
+            <h4>🤫 Silence Hours</h4>
+          </div>
+          <p>Strict silence hours are observed from <strong>10:30 PM to 6:00 AM</strong> to promote study and rest. Loud music and corridor disruptions are prohibited.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       CONTACT & EMERGENCY SECTION
+       ═══════════════════════════════════════════════ -->
+  <section id="contact" class="landing-section bg-alt">
+    <div class="landing-container">
+      <div class="section-head">
+        <span class="section-tag">Get in Touch</span>
+        <h2 class="section-title">Contact &amp; Emergency Support</h2>
+        <p class="section-subtitle">
+          We are here to assist residents, parents, and prospective students.
+        </p>
+      </div>
+
+      <div class="contact-grid">
+
+        <div class="contact-card">
+          <div class="c-icon">👨‍💼</div>
+          <h4>Chief Warden Office</h4>
+          <p>Dr. Ramesh Kumar</p>
+          <div class="c-detail">📍 Admin Block, Ground Floor</div>
+          <div class="c-detail">📞 +91-98765-43210</div>
+          <div class="c-detail">✉️ warden@sunrise-hostel.edu</div>
+          <div class="c-detail">⏰ Mon–Sat, 9:00 AM – 6:00 PM</div>
+        </div>
+
+        <div class="contact-card">
+          <div class="c-icon">🚨</div>
+          <h4>24/7 Emergency Helplines</h4>
+          <p>Immediate Campus Assistance</p>
+          <div class="c-detail">🚑 Medical Ambulance: <strong>102</strong></div>
+          <div class="c-detail">🛡️ Security Gate Ext: <strong>200</strong></div>
+          <div class="c-detail">🚒 Fire Emergency: <strong>101</strong></div>
+          <div class="c-detail">🏥 Campus Health Center: <strong>Ext. 108</strong></div>
+        </div>
+
+        <div class="contact-card">
+          <div class="c-icon">💻</div>
+          <h4>Resident Digital Portal</h4>
+          <p>Student &amp; Staff Access</p>
+          <p style="font-size:0.86rem; color:var(--clr-muted); margin-bottom:var(--sp-md);">
+            Already a resident or faculty warden? Sign in to manage your room, track complaints, or approve leaves.
+          </p>
+          <a href="login.html" class="btn btn-primary btn-block">
+            Go to Login Portal →
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════ -->
+  <footer class="landing-footer">
+    <div class="landing-container footer-container">
+      <div class="footer-col">
+        <div class="footer-brand">
+          <span class="brand-icon">🏨</span> SmartHMS
+        </div>
+        <p class="footer-text">
+          Sunrise College Residential Complex. Dedicated to modern, safe, and community-driven campus accommodations.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h5>Quick Links</h5>
+        <ul class="footer-links">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About Hostel</a></li>
+          <li><a href="#features">Facilities</a></li>
+          <li><a href="#rules">Rules &amp; Timings</a></li>
+          <li><a href="login.html">Resident Login</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Portal Access</h5>
+        <ul class="footer-links">
+          <li><a href="login.html">Student Sign In</a></li>
+          <li><a href="login.html">Warden Portal</a></li>
+          <li><a href="#contact">Emergency Contacts</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="landing-container">
+        <p>&copy; 2026 Sunrise College Hostel (SmartHMS). All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

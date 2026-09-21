@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<!--
+  student-dashboard.html — Student Portal  (Sprint 1 / v2.0)
+  Smart Hostel Management System
+
+  8 Tabs:
+    1. tab-room      — My Room details
+    2. tab-profile   — Extended student profile, emergency contacts, doc status
+    3. tab-mess      — Weekly mess menu (highlighted today)
+    4. tab-gatepass  — Gate pass / leave application + history table
+    5. tab-maintenance — Complaint ticket form with AI auto-categorizer
+    6. tab-fees      — Fee breakdown, payment status, download receipt
+    7. tab-sos       — Emergency contacts + campus helplines
+    8. tab-chatbot   — In-tab rule-based AI FAQ chatbot
+
+  Dependencies: styles.css · data.js · app.js
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Dashboard — SmartHMS</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div class="dashboard-shell">
+
+    <!-- ── SIDEBAR ──────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand"><span class="brand-icon">🏨</span> SmartHMS</div>
+        <div class="user-label">🎓 Student Portal</div>
+        <!-- Filled by StudentModule.init() -->
+        <div class="user-name" id="sidebarUserName">—</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="tab-nav" style="flex-direction:column;border:none;gap:0;">
+          <button class="tab-btn" data-tab="tab-room">
+            <span class="nav-icon">🏠</span> My Room
+          </button>
+          <button class="tab-btn" data-tab="tab-profile">
+            <span class="nav-icon">👤</span> My Profile
+          </button>
+          <button class="tab-btn" data-tab="tab-mess">
+            <span class="nav-icon">🍽️</span> Mess Menu
+          </button>
+          <button class="tab-btn" data-tab="tab-gatepass">
+            <span class="nav-icon">🚪</span> Gate Pass / Leave
+          </button>
+          <button class="tab-btn" data-tab="tab-maintenance">
+            <span class="nav-icon">🔧</span> Maintenance
+          </button>
+          <button class="tab-btn" data-tab="tab-fees">
+            <span class="nav-icon">💰</span> My Fees
+          </button>
+          <button class="tab-btn" data-tab="tab-sos">
+            <span class="nav-icon">🆘</span> SOS
+          </button>
+          <button class="tab-btn" data-tab="tab-feedback">
+            <span class="nav-icon">⭐</span> Feedback
+          </button>
+          <button class="tab-btn" data-tab="tab-chatbot">
+            <span class="nav-icon">🤖</span> AI Assistant
+          </button>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="logoutBtn">⏻ Logout</button>
+      </div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- ── TOP UTILITY & EMERGENCY BAR ── -->
+      <div class="top-util-bar">
+        <div class="top-util-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Navigation">☰ Menu</button>
+          <span style="font-size:0.85rem;color:var(--clr-muted);">Hostel: <strong>Sunrise Residence</strong></span>
+        </div>
+        <div class="top-util-right">
+          <button type="button" class="btn-sos-top" id="sosEmergencyTriggerBtn" title="Instant Emergency SOS Broadcast">
+            🚨 SOS EMERGENCY
+          </button>
+          <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Light / Dark Mode">
+            🌙 <span class="theme-label">Dark</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════ TAB 1 — MY ROOM ══ -->
+      <section id="tab-room" class="tab-panel">
+        <div class="page-header">
+          <h2>🏠 My Room</h2>
+          <p>Your current room allocation and facilities at a glance.</p>
+        </div>
+
+        <!-- Official Notice Board for Students -->
+        <div id="studentNoticesContainer" style="margin-bottom:var(--sp-lg);"></div>
+
+        <!-- StudentModule._renderRoom() injects cards here -->
+        <div id="roomInfoContainer"></div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 2 — PROFILE ══ -->
+      <section id="tab-profile" class="tab-panel">
+        <div class="page-header">
+          <h2>👤 My Profile</h2>
+          <p>Your personal details, emergency contacts, document status, and room history.</p>
+        </div>
+        <!-- StudentModule._renderProfile() injects here -->
+        <div id="profileContainer"></div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 3 — MESS MENU ══ -->
+      <section id="tab-mess" class="tab-panel">
+        <div class="page-header">
+          <h2>🍽️ Weekly Mess Menu</h2>
+          <p>Mess timings: Breakfast 7–9 AM &nbsp;·&nbsp; Lunch 12–2 PM &nbsp;·&nbsp; Dinner 7–9 PM</p>
+        </div>
+        <!-- StudentModule._renderMess() injects day cards here -->
+        <div id="messMenuContainer"></div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 4 — GATE PASS ══ -->
+      <section id="tab-gatepass" class="tab-panel">
+        <div class="page-header">
+          <h2>🚪 Gate Pass &amp; Leave</h2>
+          <p>Apply for an outpass or overnight leave. Warden approval required before exit.</p>
+        </div>
+
+        <!-- Gate Pass Application Form -->
+        <div class="card" style="max-width:600px;margin-bottom:var(--sp-xl);">
+          <h3 style="margin-bottom:var(--sp-md);">📝 Apply for Gate Pass</h3>
+
+          <div class="form-message" id="gatePassMsg"></div>
+
+          <form id="gatePassForm">
+
+            <div class="form-group">
+              <label for="passType">Pass Type</label>
+              <select id="passType" name="passType" class="form-control" required>
+                <option value="outpass">Outpass (same-day return)</option>
+                <option value="overnight">Overnight Stay</option>
+                <option value="leave">Leave (multiple days)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="destination">Destination / Purpose</label>
+              <input type="text" id="destination" name="destination" class="form-control"
+                     placeholder="e.g. City market, Home (Jaipur), Hospital" required />
+            </div>
+
+            <div class="form-group">
+              <label for="fromDateTime">Departure Date &amp; Time</label>
+              <input type="datetime-local" id="fromDateTime" name="fromDateTime" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label for="toDateTime">Expected Return Date &amp; Time</label>
+              <input type="datetime-local" id="toDateTime" name="toDateTime" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label for="passReason">Reason (optional)</label>
+              <textarea id="passReason" name="passReason" class="form-control" rows="2"
+                        placeholder="Additional details..."></textarea>
+            </div>
+
+            <div class="card" style="background:#eff6ff;border-color:#bfdbfe;font-size:0.85rem;margin-bottom:var(--sp-md);">
+              📌 Gate passes must be approved by your warden before exit.
+              The security guard will scan your QR code at the gate.
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit Gate Pass Request →</button>
+          </form>
+        </div>
+
+        <!-- My Gate Pass History -->
+        <h3 style="margin-bottom:var(--sp-md);">📋 My Gate Pass History</h3>
+        <!-- StudentModule._renderGatePassList() injects here -->
+        <div id="myGatePassList"></div>
+
+      </section><!-- /#tab-gatepass -->
+
+      <!-- ══════════════════════════════════ TAB 5 — MAINTENANCE ══ -->
+      <section id="tab-maintenance" class="tab-panel">
+        <div class="page-header">
+          <h2>🔧 Maintenance Requests</h2>
+          <p>Raise a ticket for any room or hostel issue. Our AI will auto-categorize it.</p>
+        </div>
+
+        <!-- Ticket Form -->
+        <div class="card" style="max-width:600px;margin-bottom:var(--sp-xl);">
+          <h3 style="margin-bottom:var(--sp-md);">🛠️ New Maintenance Ticket</h3>
+
+          <div class="form-message" id="ticketMsg"></div>
+
+          <form id="ticketForm">
+
+            <div class="form-group">
+              <label for="ticketTitle">Issue Title</label>
+              <input type="text" id="ticketTitle" name="ticketTitle" class="form-control"
+                     placeholder="e.g. Fan not working, Water leakage" required />
+            </div>
+
+            <div class="form-group">
+              <label for="ticketDesc">Description</label>
+              <textarea id="ticketDesc" name="ticketDesc" class="form-control" rows="4"
+                        placeholder="Describe the issue in detail — the more detail, the better our AI can categorize it."
+                        required></textarea>
+            </div>
+
+            <!-- Image Upload with Live Preview -->
+            <div class="form-group">
+              <label for="ticketImage">📸 Attach Photo (Optional)</label>
+              <input type="file" id="ticketImage" name="ticketImage" class="form-control" accept="image/*" />
+              <div id="ticketImagePreviewWrap" style="display:none;margin-top:var(--sp-sm);position:relative;">
+                <img id="ticketImagePreview" src="" alt="Preview" class="ticket-image-preview-img" />
+                <button type="button" id="ticketImageRemoveBtn" class="ticket-image-remove-btn" title="Remove photo">✕</button>
+              </div>
+            </div>
+
+            <!--
+              AI PREVIEW BOX
+              Appears after the student types 5+ characters.
+              Shows real-time AI category + priority prediction.
+            -->
+            <div id="aiPreviewBox" style="display:none;"
+                 class="card" style="background:#f0fdf4;border-color:#86efac;font-size:0.88rem;margin-bottom:var(--sp-md);">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit Ticket →</button>
+          </form>
+        </div>
+
+        <!-- My Tickets -->
+        <h3 style="margin-bottom:var(--sp-md);">📋 My Tickets</h3>
+        <!-- StudentModule._renderMyTickets() injects here -->
+        <div id="myTicketsList"></div>
+
+      </section><!-- /#tab-maintenance -->
+
+      <!-- ══════════════════════════════════ TAB 6 — FEES ══ -->
+      <section id="tab-fees" class="tab-panel">
+        <div class="page-header">
+          <h2>💰 My Fees</h2>
+          <p>Hostel and mess fee breakdown for the current semester.</p>
+        </div>
+        <!-- StudentModule._renderFees() injects here -->
+        <div id="feesContainer"></div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 7 — SOS ══ -->
+      <section id="tab-sos" class="tab-panel">
+        <div class="page-header">
+          <h2>🆘 Emergency SOS</h2>
+          <p>Quick access to all emergency contacts. In life-threatening situations call 108 or 100 immediately.</p>
+        </div>
+        <!-- StudentModule._renderSOS() injects here -->
+        <div id="sosContainer"></div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 8 — CHATBOT ══ -->
+      <section id="tab-chatbot" class="tab-panel">
+        <div class="page-header">
+          <h2>🤖 AI Hostel Assistant</h2>
+          <p>Ask questions about hostel rules, mess timings, leave policy, and more.</p>
+        </div>
+
+        <div class="card" style="max-width:620px;">
+
+          <!-- Chat history window -->
+          <div id="chatHistory" style="
+            height:320px; overflow-y:auto; display:flex; flex-direction:column;
+            gap:var(--sp-sm); padding:var(--sp-md); background:#f8fafc;
+            border-radius:8px; margin-bottom:var(--sp-md); border:1px solid var(--clr-border);">
+            <div class="chat-msg chat-bot">
+              Hello! 👋 I'm your SmartHMS AI assistant.
+              Ask me about curfew, mess menu, leave rules, fees, or anything hostel-related!
+            </div>
+          </div>
+
+          <!-- Chat input form — wired by ChatbotModule.init() -->
+          <form id="chatForm" style="display:flex; gap:var(--sp-sm);">
+            <input type="text" id="chatInput" class="form-control"
+                   placeholder="Type your question…" autocomplete="off" />
+            <button type="submit" class="btn btn-primary">Send</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════ TAB 9 — FEEDBACK ══ -->
+      <section id="tab-feedback" class="tab-panel">
+        <div class="page-header">
+          <h2>⭐ Student Feedback &amp; AI Sentiment</h2>
+          <p>Share your hostel experience. Our AI categorizes and analyzes sentiment in real time.</p>
+        </div>
+
+        <div class="card" style="max-width:620px;margin-bottom:var(--sp-xl);">
+          <h3 style="margin-bottom:var(--sp-md);">✍️ Submit Feedback</h3>
+          <div class="form-message" id="feedbackMsg"></div>
+
+          <form id="feedbackForm">
+            <div class="form-group">
+              <label for="fbCategory">Category</label>
+              <select id="fbCategory" name="fbCategory" class="form-control" required>
+                <option value="Mess & Food">🍽️ Mess &amp; Food Quality</option>
+                <option value="Room & Cleaning">🧹 Room &amp; Washroom Cleanliness</option>
+                <option value="Wi-Fi & Internet">📶 Wi-Fi &amp; Internet Connectivity</option>
+                <option value="Security & Facilities">🔒 Security &amp; Common Facilities</option>
+                <option value="Administration">🛡️ Warden &amp; Administration Support</option>
+                <option value="General">💡 General Feedback / Suggestion</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="fbRating">Experience Rating</label>
+              <select id="fbRating" name="fbRating" class="form-control" required>
+                <option value="5">⭐⭐⭐⭐⭐ Excellent (5/5)</option>
+                <option value="4" selected>⭐⭐⭐⭐ Good (4/5)</option>
+                <option value="3">⭐⭐⭐ Average (3/5)</option>
+                <option value="2">⭐⭐ Needs Improvement (2/5)</option>
+                <option value="1">⭐ Poor / Critical (1/5)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="fbMessage">Your Comments / Details</label>
+              <textarea id="fbMessage" name="fbMessage" class="form-control" rows="4"
+                        placeholder="Share specific details about what was good or what needs fixing..." required></textarea>
+            </div>
+
+            <!-- Live Sentiment Preview Box -->
+            <div id="sentimentLivePreview" style="display:none;margin-bottom:var(--sp-md);" class="card"></div>
+
+            <button type="submit" class="btn btn-primary">Submit Feedback →</button>
+          </form>
+        </div>
+
+        <!-- My Past Feedback List -->
+        <h3 style="margin-bottom:var(--sp-md);">📋 My Feedback History</h3>
+        <div id="myFeedbackList"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Floating AI widget is injected by AIAssistantModule.init() -->
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+
+  <!-- ── EMERGENCY INCIDENT MODAL ── -->
+  <div id="sosIncidentModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card" style="border-top:5px solid var(--clr-danger);">
+      <button type="button" class="modal-close-btn" id="closeSosModalBtn">✕</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--sp-md);">
+        <span style="font-size:2rem;">🚨</span>
+        <div>
+          <h3 style="color:var(--clr-danger);margin:0;">Emergency Assistance Dispatch</h3>
+          <p style="font-size:0.82rem;color:var(--clr-muted);margin:0;">Immediate high-priority alert broadcast to Warden &amp; Security</p>
+        </div>
+      </div>
+
+      <form id="sosIncidentForm">
+        <div class="form-group">
+          <label for="sosType">Emergency Category <span style="color:var(--clr-danger);">*</span></label>
+          <select id="sosType" class="form-control" required>
+            <option value="Medical Emergency">🏥 Medical Emergency (Ambulance / Doctor)</option>
+            <option value="Fire / Smoke Hazard">🔥 Fire or Electrical Smoke Hazard</option>
+            <option value="Physical Threat / Harassment">⚠️ Physical Threat / Anti-Ragging Alert</option>
+            <option value="Structural / Severe Hazard">⚡ Structural or Severe Room Hazard</option>
+            <option value="Other Urgent Crisis">🆘 Other Urgent Crisis</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="sosDetails">Incident Details &amp; Exact Location (Optional)</label>
+          <textarea id="sosDetails" class="form-control" rows="3"
+                    placeholder="Briefly state what happened or specific instructions for first responders..."></textarea>
+        </div>
+
+        <div class="card" style="background:#fff1f2;border-color:#fecdd3;font-size:0.85rem;margin-bottom:var(--sp-md);">
+          <strong>⚠️ Immediate Action:</strong> For life-threatening situations, also call:
+          <div style="margin-top:4px;">
+            📞 Ambulance: <strong>108</strong> · Police: <strong>100</strong> · Campus Medical: <strong>+91-11000-00001</strong>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="background:#dc2626;font-size:1rem;padding:12px;font-weight:700;">
+          🚨 BROADCAST EMERGENCY ALERT NOW →
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── DIGITAL QR GATE PASS MODAL ── -->
+  <div id="gatePassModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card" style="max-width:480px;">
+      <button type="button" class="modal-close-btn" id="closeGatePassModalBtn">✕</button>
+      <div id="gatePassModalBody"></div>
+    </div>
+  </div>
+
+</body>
+</html>
